@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monika Anna Tomaszewska, Ph.D.</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #020610;
+    --deep: #050d1f;
+    --navy: #0a1628;
+    --orbit: #0f2444;
+    --signal: #00c8ff;
+    --pulse: #00ff9d;
+    --satellite: #4db8ff;
+    --star: #e8f4ff;
+    --dim: #7a9ab8;
+    --glow: rgba(0,200,255,0.15);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--void);
+    color: var(--star);
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  #starfield {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(2,6,16,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,200,255,0.12);
+    padding: 0 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 54px;
+  }
+  .nav-brand {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.96rem;
+    letter-spacing: 0.18em;
+    color: var(--signal);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .nav-brand::before {
+    content: '';
+    display: inline-block; width: 6px; height: 6px;
+    background: var(--pulse); border-radius: 50%;
+    animation: blink 2s infinite;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.94rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--dim); text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--signal); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 6rem 2.5rem 4rem;
+    overflow: hidden;
+  }
+  .orbit-ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(0,200,255,0.07);
+    pointer-events: none;
+  }
+  .orbit-1 { width: 500px; height: 500px; right: -80px; top: 50%; transform: translateY(-50%); animation: rot 40s linear infinite; }
+  .orbit-2 { width: 740px; height: 740px; right: -200px; top: 50%; transform: translateY(-50%); animation: rot 65s linear infinite reverse; border-color: rgba(0,255,157,0.05); }
+  .orbit-3 { width: 1000px; height: 1000px; right: -340px; top: 50%; transform: translateY(-50%); animation: rot 95s linear infinite; border-color: rgba(0,200,255,0.03); }
+  .orbit-dot {
+    position: absolute; width: 5px; height: 5px;
+    background: var(--signal); border-radius: 50%;
+    top: 0; left: 50%; transform: translateX(-50%) translateY(-50%);
+    box-shadow: 0 0 10px var(--signal);
+  }
+  .orbit-dot-2 { background: var(--pulse); box-shadow: 0 0 10px var(--pulse); top: auto; bottom: 0; }
+  @keyframes rot {
+    from { transform: translateY(-50%) rotate(0deg); }
+    to { transform: translateY(-50%) rotate(360deg); }
+  }
+  .hero-content { max-width: 640px; position: relative; z-index: 2; text-align: center; margin: 0 auto; }
+  .hero-coords {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.94rem;
+    letter-spacing: 0.15em; color: var(--pulse); margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
+  }
+  .hero-name {
+    font-family: 'Playfair Display';
+    font-size: clamp(2.8rem, 5.5vw, 5rem); font-weight: 400; line-height: 1.05;
+    color: var(--star); margin-bottom: 0.5rem;
+    opacity: 0; animation: fadeUp 0.7s 0.35s forwards;
+  }
+  .hero-last { color: var(--signal); display: block; }
+  .hero-title {
+    font-family: 'Share Tech Mono', monospace; font-size: 1.04rem;
+    letter-spacing: 0.12em; color: var(--dim); margin-bottom: 2.5rem; text-transform: uppercase;
+    opacity: 0; animation: fadeUp 0.7s 0.5s forwards;
+  }
+  .hero-tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem;
+    opacity: 0; animation: fadeUp 0.7s 0.65s forwards; justify-content: center;
+  }
+  .tag {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; letter-spacing: 0.07em;
+    padding: 0.3rem 0.75rem; border: 1px solid rgba(0,200,255,0.28);
+    color: var(--satellite); background: rgba(0,200,255,0.05); border-radius: 2px;
+  }
+  .hero-links { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.7s 0.8s forwards; justify-content: center; }
+  .btn {
+    padding: 0.65rem 1.5rem; font-family: 'Share Tech Mono', monospace;
+    font-size: 0.96rem; letter-spacing: 0.12em; text-transform: uppercase;
+    text-decoration: none; border-radius: 2px; transition: all 0.25s;
+    cursor: pointer; border: none; display: inline-block;
+  }
+  .btn-primary { background: var(--signal); color: var(--void); }
+  .btn-primary:hover { background: #33d4ff; box-shadow: 0 0 22px rgba(0,200,255,0.4); }
+  .btn-outline { background: transparent; border: 1px solid rgba(0,200,255,0.35); color: var(--signal); }
+  .btn-outline:hover { background: rgba(0,200,255,0.08); box-shadow: 0 0 16px rgba(0,200,255,0.2); }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+  section { position: relative; z-index: 1; padding: 5rem 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; }
+  .section-label {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.9rem;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--pulse);
+    margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.75rem;
+  }
+  .section-label::before { content:''; display:inline-block; width:24px; height:1px; background:var(--pulse); }
+  .section-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: clamp(1.8rem,3vw,2.6rem); font-weight: 400; color: var(--star);
+    margin-bottom: 3rem; padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(0,200,255,0.1);
+  }
+
+  /* ABOUT */
+  #about-section { background: var(--deep); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .about-text { font-size: 1.22rem; color: #a0bcd4; line-height: 1.85; }
+  .about-text p + p { margin-top: 1.1rem; }
+  .ri-label { font-family:'Share Tech Mono',monospace; font-size:0.9rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--pulse); margin-bottom:1rem; }
+  .ri-tags { display:flex; flex-wrap:wrap; gap:0.5rem; }
+  .ri-tag {
+    font-family:'Rajdhani',sans-serif; font-size:1.14rem; font-weight:500;
+    padding:0.35rem 0.9rem; background:rgba(0,200,255,0.05);
+    border:1px solid rgba(0,200,255,0.16); color:var(--satellite);
+    border-radius:2px; transition:all 0.2s; letter-spacing:0.03em;
+  }
+  .ri-tag:hover { background:rgba(0,200,255,0.12); border-color:rgba(0,200,255,0.4); color:var(--signal); }
+
+  /* EXPERIENCE */
+  #experience { background: var(--void); }
+  .timeline { position:relative; }
+  .timeline::before {
+    content:''; position:absolute; left:150px; top:0; bottom:0; width:1px;
+    background: linear-gradient(to bottom, transparent, rgba(0,200,255,0.25) 8%, rgba(0,200,255,0.25) 92%, transparent);
+  }
+  .timeline-item { display:grid; grid-template-columns:150px 1fr; gap:0 2.5rem; margin-bottom:3rem; }
+  .timeline-date { font-family:'Share Tech Mono',monospace; font-size:1.04rem; color:var(--pulse); text-align:right; padding-top:0.2rem; line-height:1.5; }
+  .timeline-content { padding-left:2.5rem; position:relative; }
+  .timeline-content::before { content:'◆'; position:absolute; left:-0.45rem; top:0.45rem; color:var(--signal); font-size:0.48rem; transform:translateX(-50%); }
+  .timeline-role { font-family:'Libre Baskerville',serif; font-size:1.3rem; font-weight:400; color:var(--star); margin-bottom:0.2rem; }
+  .timeline-org { font-family:'Share Tech Mono',monospace; font-size:0.94rem; letter-spacing:0.06em; color:var(--signal); margin-bottom:0.75rem; opacity:0.75; }
+  .timeline-desc { font-size:1.14rem; color:var(--dim); line-height:1.7; }
+  .timeline-desc ul { list-style:none; }
+  .timeline-desc li { padding-left:1.2rem; position:relative; margin-bottom:0.4rem; }
+  .timeline-desc li::before { content:'›'; position:absolute; left:0; color:var(--pulse); }
+
+  /* SKILLS */
+  #skills { background: var(--deep); }
+  .skills-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.2rem; }
+  .skill-card {
+    background:rgba(0,200,255,0.03); border:1px solid rgba(0,200,255,0.1);
+    padding:1.5rem; border-radius:3px; transition:all 0.25s; position:relative; overflow:hidden;
+  }
+  .skill-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--signal),var(--pulse)); opacity:0; transition:opacity 0.25s; }
+  .skill-card:hover { border-color:rgba(0,200,255,0.28); background:rgba(0,200,255,0.06); }
+  .skill-card:hover::before { opacity:1; }
+  .skill-card-title { font-family:'Share Tech Mono',monospace; font-size:0.92rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--signal); margin-bottom:1rem; }
+  .skill-pills { display:flex; flex-wrap:wrap; gap:0.4rem; }
+  .skill-pill { font-family:'Rajdhani',sans-serif; font-size:1.1rem; font-weight:500; padding:0.2rem 0.6rem; background:rgba(0,200,255,0.05); border:1px solid rgba(0,200,255,0.13); color:#a0bcd4; border-radius:2px; }
+
+  /* PROJECTS */
+  #projects { background: var(--void); }
+  .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.2rem; }
+  .project-card {
+    background:var(--navy); border:1px solid rgba(0,200,255,0.1);
+    padding:1.75rem; border-radius:3px; transition:all 0.25s; position:relative; overflow:hidden;
+  }
+  .project-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--pulse),transparent); opacity:0; transition:opacity 0.25s; }
+  .project-card:hover { border-color:rgba(0,200,255,0.25); box-shadow:0 8px 32px rgba(0,200,255,0.07); transform:translateY(-2px); }
+  .project-card:hover::after { opacity:1; }
+  .project-years { font-family:'Share Tech Mono',monospace; font-size:0.9rem; letter-spacing:0.1em; color:var(--pulse); margin-bottom:0.5rem; }
+  .project-name { font-family:'Libre Baskerville',serif; font-size:1.14rem; font-weight:400; color:var(--star); margin-bottom:0.6rem; line-height:1.4; }
+  .project-desc { font-size:1.1rem; color:var(--dim); line-height:1.65; }
+  .project-badge { display:inline-block; font-family:'Share Tech Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; padding:0.12rem 0.48rem; background:rgba(0,255,157,0.07); border:1px solid rgba(0,255,157,0.22); color:var(--pulse); border-radius:2px; margin-bottom:0.75rem; }
+
+  /* PUBLICATIONS */
+  #publications { background: var(--deep); }
+  .pub-item { border-left:1px solid rgba(0,200,255,0.13); padding:1.2rem 1.5rem; margin-bottom:1rem; transition:all 0.2s; border-radius:0 3px 3px 0; }
+  .pub-item:hover { border-color:var(--signal); background:rgba(0,200,255,0.03); }
+  .pub-journal { font-family:'Share Tech Mono',monospace; font-size:0.9rem; letter-spacing:0.1em; color:var(--pulse); margin-bottom:0.35rem; text-transform:uppercase; }
+  .pub-title { font-family:'Libre Baskerville',serif; font-size:1.24rem; font-weight:400; color:var(--star); line-height:1.45; margin-bottom:0.35rem; }
+  .pub-authors { font-size:1.1rem; color:var(--dim); }
+  .pub-badge { display:inline-block; font-family:'Share Tech Mono',monospace; font-size:0.71rem; letter-spacing:0.08em; padding:0.1rem 0.42rem; background:rgba(0,200,255,0.1); border:1px solid rgba(0,200,255,0.28); color:var(--signal); border-radius:2px; margin-left:0.5rem; vertical-align:middle; }
+
+  /* SERVICE */
+  #service { background: var(--void); }
+  .service-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; }
+  .service-block h3 { font-family:'Share Tech Mono',monospace; font-size:0.96rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--signal); margin-bottom:1.25rem; padding-bottom:0.6rem; border-bottom:1px solid rgba(0,200,255,0.1); }
+  .service-item { font-size:1.14rem; color:var(--dim); padding:0.55rem 0 0.55rem 1.1rem; border-bottom:1px solid rgba(0,200,255,0.05); line-height:1.5; position:relative; }
+  .service-item::before { content:'›'; position:absolute; left:0; color:var(--pulse); }
+
+  /* CONTACT */
+  #contact { background: var(--deep); }
+  .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:4rem; }
+  .contact-intro { font-size:1.19rem; color:var(--dim); line-height:1.8; margin-bottom:2.5rem; }
+  .contact-detail { display:flex; flex-direction: column; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; }
+  .contact-icon { font-family:'Share Tech Mono',monospace; font-size:0.88rem; letter-spacing:0.12em; color:var(--pulse); text-transform:uppercase; min-width:60px; padding-top:0.1rem; }
+  .contact-val { font-size:1.14rem; color:var(--dim); }
+  .contact-val a { color:var(--satellite); text-decoration:none; border-bottom:1px solid rgba(0,200,255,0.2); transition:all 0.2s; }
+  .contact-val a:hover { color:var(--signal); border-color:var(--signal); }
+  .memberships h3 { font-family:'Share Tech Mono',monospace; font-size:0.96rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--signal); margin-bottom:1.25rem; padding-bottom:0.6rem; border-bottom:1px solid rgba(0,200,255,0.1); }
+  .membership-item { font-size:1.14rem; color:var(--dim); padding:0.55rem 0 0.55rem 1.25rem; border-bottom:1px solid rgba(0,200,255,0.05); position:relative; }
+  .membership-item::before { content:'◆'; position:absolute; left:0; color:var(--signal); font-size:0.42rem; top:0.75rem; }
+
+  footer { background:var(--void); border-top:1px solid rgba(0,200,255,0.07); padding:1.5rem 2.5rem; text-align:center; font-family:'Share Tech Mono',monospace; font-size:0.88rem; letter-spacing:0.12em; color:rgba(0,200,255,0.28); position:relative; z-index:1; }
+
+  /* HAMBURGER - pure CSS checkbox, no JS needed */
+  .hamburger {
+    display: none; flex-direction: column; justify-content: center; gap: 5px;
+    cursor: pointer; padding: 0.75rem; z-index: 99999; position: relative;
+    background: none; border: none; 
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hamburger span {
+    display: block; width: 24px; height: 2px;
+    background: var(--signal); border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+  .hamburger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.is-open span:nth-child(2) { opacity: 0; }
+  .hamburger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* MOBILE MENU - dropdown from nav */
+  .mobile-menu {
+    display: none;
+    position: fixed; top: 54px; left: 0; right: 0;
+    background: rgba(2,6,16,0.98);
+    border-bottom: 1px solid rgba(0,200,255,0.15);
+    z-index: 99999;
+    flex-direction: column; align-items: center;
+    padding: 2rem 0 2.5rem; gap: 0;
+  }
+  .mobile-menu.is-open { display: flex; }
+  .mobile-menu a {
+    font-family: 'Share Tech Mono', monospace; font-size: 1.1rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--dim); text-decoration: none;
+    padding: 1rem 2rem; display: block; width: 100%; text-align: center;
+    border-bottom: 1px solid rgba(0,200,255,0.05);
+  }
+  .mobile-menu a:active { color: var(--signal); background: rgba(0,200,255,0.05); }
+
+  @media (max-width: 900px) {
+    .about-grid,.service-grid,.contact-grid { grid-template-columns:1fr; }
+    .timeline::before { left:0; }
+    .timeline-item { grid-template-columns:1fr; }
+    .timeline-date { text-align:left; margin-bottom:0.4rem; }
+    .timeline-content { padding-left:1.25rem; }
+    .nav-links { display:none; }
+    .orbit-ring { display:none; }
+    .hamburger { display:flex; }
+    .container { padding: 0 1.25rem; }
+    .skills-grid { grid-template-columns: 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    section { padding: 3rem 0; }
+    .hero { padding: 5rem 1.25rem 3rem; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-name { font-size: clamp(2rem, 10vw, 3rem); }
+    .section-title { font-size: clamp(1.4rem, 6vw, 2rem); }
+    .pub-title { font-size: 1rem; }
+    .timeline-role { font-size: 1.05rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="grid-overlay"></div>
+
+<nav>
+  <div class="nav-brand">M.A. Tomaszewska · EO Scientist</div>
+  <ul class="nav-links">
+    <li><a href="#about-section">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#publications">Publications</a></li>
+    <li><a href="#service">Service</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#cv">CV</a></li>
+  </ul>
+  <button id="hamburger" class="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#about-section" class="mobile-link">About</a>
+  <a href="#experience" class="mobile-link">Experience</a>
+  <a href="#skills" class="mobile-link">Skills</a>
+  <a href="#projects" class="mobile-link">Projects</a>
+  <a href="#publications" class="mobile-link">Publications</a>
+  <a href="#service" class="mobile-link">Service</a>
+  <a href="#contact" class="mobile-link">Contact</a>
+  <a href="#cv" class="mobile-link">CV</a>
+</div>
+<section class="hero" id="hero">
+  <div class="orbit-ring orbit-1"><div class="orbit-dot"></div></div>
+  <div class="orbit-ring orbit-2"><div class="orbit-dot orbit-dot-2"></div></div>
+  <div class="orbit-ring orbit-3"></div>
+  <div class="hero-content">
+    <div class="hero-coords">52.2297° N, 21.0122° E · WARSAW · POLAND </div>
+    <h1 class="hero-name">Monika Anna<br><span class="hero-last"> Tomaszewska</span></h1>
+    <p class="hero-title">· Adjunct Professor @ Michigan State University ·<br>· MatSat Monika Tomaszewska · <br> · Ph.D. ·</p>
+    <div class="hero-tags">
+      <span class="tag">Earth Observation</span>
+      <span class="tag">SAR · Optical · Thermal</span>
+      <span class="tag">Land Surface Phenology</span>
+      <span class="tag">HPC Workflows</span>
+      <span class="tag">NASA · ESA Programs</span>
+    </div>
+    <div class="hero-links">
+      <a href="mailto:monika.anna.tomaszewska@gmail.com" class="btn btn-primary">Establish Contact</a>
+      <a href="#publications" class="btn btn-outline">View Publications</a>
+    </div>
+  </div>
+</section>
+
+<section id="about-section">
+  <div class="container">
+    <div class="section-label">Profile</div>
+    <h2 class="section-title">About</h2>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>Earth Observation scientist with 10+ years of experience in large-scale satellite data analysis, environmental monitoring, and geospatial modeling. Specialized in optical, thermal, and radar (SAR) data processing and multi-sensor integration on high-performance computing (HPC).</p>
+        <p>My work has ranged widely — agricultural land cover and land-use change, snow-cover seasonality, highland pasture phenologies, human exposure to urban heat and greenness, and assessment of new EO and geospatial products — contributing to NASA and ESA programs across Central Asia, Europe, and North America.</p>
+        <p>Skilled in R, Python, and Julia for automating data ingestion, time-series modeling, and EO and geospatial data processing and product generation. Extensive collaboration record advancing satellite data analytics for agricultural, climate, and land-use research.</p>
+      </div>
+      <div>
+        <div class="ri-label">Research Interests</div>
+        <div class="ri-tags">
+          <span class="ri-tag">Land Surface Phenology</span>
+          <span class="ri-tag">Snow-Cover Seasonality</span>
+          <span class="ri-tag">Crop Monitoring</span>
+          <span class="ri-tag">Urban Heat Exposure</span>
+          <span class="ri-tag">Vegetation Dynamics</span>
+          <span class="ri-tag">HPC Time-Series</span>
+          <span class="ri-tag">Multi-Sensor Integration</span>
+          <span class="ri-tag">Mountain Ecosystems</span>
+          <span class="ri-tag">Agricultural Land Use</span>
+          <span class="ri-tag">Machine Learning</span>
+          <span class="ri-tag">Thermal Remote Sensing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="container">
+    <div class="section-label">Career</div>
+    <h2 class="section-title">Experience</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">2025 – Present</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Adjunct Assistant Professor – Research</div>
+          <div class="timeline-org">Center for Global Change & Earth Observations · Michigan State University</div>
+          <div class="timeline-desc"><ul>
+            <li>Co-Investigator, MSU Health Equity Research – EO and geospatial data processing for heat and vegetation greenness exposure mapping in Detroit; meteorological data processing for UTCI, trend analyses.</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2024 – 2025</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Assistant Professor – Research</div>
+          <div class="timeline-org">Center for Global Change & Earth Observations · Michigan State University</div>
+          <div class="timeline-desc"><ul>
+            <li>Led EO and geospatial data processing for large multi-sensor datasets integrating Sentinel-2, MODIS/VIIRS, and HLS imagery using HPC.</li>
+            <li>Co-Investigator, NASA CNVOE SmallSat SAR evaluation (Capella & UMBRA X-band).</li>
+            <li>Member, NASA LP DAAC and NASA Surface Biology and Geology User Working Groups (UWG).</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2020 – 2024</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Postdoctoral Research Associate</div>
+          <div class="timeline-org">Center for Global Change & Earth Observations · Michigan State University</div>
+          <div class="timeline-desc"><ul>
+            <li>Developed scalable HPC workflows for time-series fusion of MODIS, VIIRS, and Sentinel-2 imagery.</li>
+            <li>Field campaigns  for NASA LCLUC projects in Romania and Kyrgyzstan.</li>
+            <li>Phenological metrics for bird migration analyses across CONUS.</li>
+            <li>Snow-cover seasonality trends over Tian Shan and Pamir mountain systems.</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2016 – 2019</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Graduate Research Assistant</div>
+          <div class="timeline-org">Geospatial Sciences Center of Excellence · South Dakota State University</div>
+          <div class="timeline-desc"><ul>
+            <li>Reprocessed 35,000+ Landsat scenes to model land-surface phenology and snow seasonality in Central Asia.</li>
+            <li>Quantified terrain and climate effects on vegetation dynamics.</li>
+            <li>Field campaigns  for NASA LCLUC project in Kyrgyzstan.</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2011 – 2016</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Research Assistant</div>
+          <div class="timeline-org">Institute of Geodesy & Cartography, Remote Sensing Center · Warsaw, Poland</div>
+          <div class="timeline-desc"><ul>
+            <li>Supported ESA/EU projects (GEOLAND, MONINA, Finegrass) on vegetation monitoring and wetland mapping.</li>
+            <li>Led field campaigns for validation over agricultural and wetland regions.</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2013</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Visiting Researcher</div>
+          <div class="timeline-org">South Dakota State University</div>
+          <div class="timeline-desc"><ul>
+            <li>MODIS MIR data analysis for characterizing urbanized areas within NASA LCLUC project on urban canopy and severe weather.</li>
+          </ul></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2008 – 2011</div>
+        <div class="timeline-content">
+          <div class="timeline-role">GIS Software Tester</div>
+          <div class="timeline-org">Neokart GIS Ltd. · Warsaw, Poland</div>
+          <div class="timeline-desc"><ul>
+            <li>Testing GIS and database software for the General Directorate for National Roads and Motorways (GDDKiA).</li>
+          </ul></div>
+        </div>
+      </div>
+      <h2 class="section-title">Education</h2>
+      <div class="timeline-item">
+        <div class="timeline-date">2019</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Ph.D., Geospatial Science & Engineering</div>
+          <div class="timeline-org">South Dakota State University · Geospatial Sciences Center of Excellence</div>
+          <div class="timeline-desc"><ul>
+            <p>How Are Interannual Variations Of Land Surface Phenology In The Highland Pastures Of Kyrgyzstan Modulated By Terrain, Snow Cover Seasonality, And Climate Oscillations? An Investigation Using Multi-Source Remote Sensing Data.</p>
+          </ul></div>
+      </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2012</div>
+        <div class="timeline-content">
+          <div class="timeline-role">PgDip, Geographic Information Systems</div>
+          <div class="timeline-org">Warsaw University of Technology · Faculty of Geodesy and Cartography</div>
+          <div class="timeline-desc"><ul>
+            <p>Use of "Topographic Map of the Kingdom of Poland (1822 – 1843)" to study the changes of topography of a Brańszczyk borough.</p>
+          </ul></div>
+      </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2010</div>
+        <div class="timeline-content">
+          <div class="timeline-role">M.S., Remote Sensing of Environment</div>
+          <div class="timeline-org">University of Warsaw · Faculty of Geography and Regional Studies</div>
+          <div class="timeline-desc"><ul>
+            <p>Use of MODIS Satellite Images to Study the Percentage of Vegetation Cover.</p>
+          </ul></div>
+      </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2008</div>
+        <div class="timeline-content">
+          <div class="timeline-role">B.A., Geography</div>
+          <div class="timeline-org">University of Warsaw · Faculty of Geography and Regional Studies</div>
+            <div class="timeline-desc"><ul>
+            <p>Using remote sensing in a zoning plan of the country.</p>
+          </ul></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="container">
+    <div class="section-label">Technical</div>
+    <h2 class="section-title">Core Expertise</h2>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-card-title">Programming & Tools</div>
+        <div class="skill-pills">
+          <span class="skill-pill">Python</span><span class="skill-pill">R</span><span class="skill-pill">Julia</span>
+          <span class="skill-pill">Bash</span><span class="skill-pill">Git</span>
+          <span class="skill-pill">Docker</span><span class="skill-pill">Conda / Mamba</span>
+        </div>
+        <div class="skill-card-title" style="margin-top:1rem;">Big Data & HPC</div>
+        <div class="skill-pills">
+          <span class="skill-pill">HPC (MSU ICER)</span><span class="skill-pill">Parallel Processing</span>
+          <span class="skill-pill">Cloud-Optimized GeoTIFF</span><span class="skill-pill">Time-Series Modeling</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-title">EO Platforms & Sensors</div>
+        <div class="skill-pills">
+          <span class="skill-pill">Sentinel-1 SAR</span><span class="skill-pill">Sentinel-2</span>
+          <span class="skill-pill">Landsat 5–9</span><span class="skill-pill">MODIS / VIIRS</span>
+          <span class="skill-pill">ECOSTRESS</span><span class="skill-pill">DESIS</span>
+          <span class="skill-pill">VENµS</span><span class="skill-pill">Capella / UMBRA</span>
+          <span class="skill-pill">ConstellR</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-title">Geospatial Software</div>
+        <div class="skill-pills">
+          <span class="skill-pill">GDAL</span><span class="skill-pill">R terra / tmap</span>
+          <span class="skill-pill">QGIS</span><span class="skill-pill">ArcGIS</span>
+          <span class="skill-pill">ENVI</span><span class="skill-pill">ERDAS</span>
+          <span class="skill-pill">PCI Geomatica</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-card-title">Applications</div>
+        <div class="skill-pills">
+          <span class="skill-pill">Land Surface Phenology</span><span class="skill-pill">Crop Monitoring</span>
+          <span class="skill-pill">Snow-Cover Analysis</span><span class="skill-pill">Mountain Environment</span>
+          <span class="skill-pill">Multi-Sensor Fusion</span><span class="skill-pill">Machine Learning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="container">
+    <div class="section-label">Missions</div>
+    <h2 class="section-title">Selected EO Projects</h2>
+    <div class="projects-grid">
+      <div class="project-card">
+        <div class="project-badge">Co-PI · Active</div>
+        <div class="project-years">2025 – 2026</div>
+        <div class="project-name">MSU Health Equity – Urban Heat & Green Space Mapping</div>
+        <div class="project-desc">EO-based mapping of green space and urban heat exposure in Detroit to support community resilience.</div>
+      </div>
+      <div class="project-card">
+        <div class="project-badge">Co-I · NASA CNVOE</div>
+        <div class="project-years">2023 – 2025</div>
+        <div class="project-name">X-band SAR SmallSat Evaluation</div>
+        <div class="project-desc">Evaluating Capella & UMBRA commercial X-band SAR data accessibility, calibration, and workflow integration for crop phenology.</div>
+      </div>
+      <div class="project-card">
+        <div class="project-badge">NASA LCLUC</div>
+        <div class="project-years">2023 – 2025</div>
+        <div class="project-name">Post-Socialist Agricultural Land-Use Change</div>
+        <div class="project-desc">Agricultural land-use change in post-socialist Europe; field validation and land-surface phenology modeling in Romania.</div>
+      </div>
+      <div class="project-card">
+        <div class="project-badge">NASA Biodiversity</div>
+        <div class="project-years">2022 – 2024</div>
+        <div class="project-name">EO Variables for Avian Migration Modeling</div>
+        <div class="project-desc">Linking land surface phenology to bird migration timing across CONUS using dense satellite time series.</div>
+      </div>
+      <div class="project-card">
+        <div class="project-badge">NASA LCLUC</div>
+        <div class="project-years">2016 – 2023</div>
+        <div class="project-name">Central Asian Highlands – Land Change</div>
+        <div class="project-desc">Atmospheric teleconnections and telecouplings driving land change; snow seasonality and phenology over Tian Shan and Pamir.</div>
+      </div>
+      <div class="project-card">
+        <div class="project-badge">ESA Finegrass</div>
+        <div class="project-years">2013 – 2016</div>
+        <div class="project-name">Remote Sensing Grassland Monitoring</div>
+        <div class="project-desc">Effect of climatic changes on grassland growth, its water conditions and biomass.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="publications">
+  <div class="container">
+    <div class="section-label">Transmissions</div>
+    <h2 class="section-title">Selected Publications</h2>
+    <div class="pub-item">
+      <div class="pub-journal">Ecology · 2025</div>
+      <div class="pub-title">Shifts in avian migration phenologies do not compensate for changes to conditions en route in spring and fall</div>
+      <div class="pub-authors">Adams, C. A., <strong>Tomaszewska, M. A.</strong>, Henebry, G. M., & Horton, K. G. <a href="https://doi.org/10.1002/ecy.70110" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Environmental Research Letters · 2025</div>
+      <div class="pub-title">Snow-cover seasonality in Kyrgyzstan: Variation and change over 20 years (2001–2021) as observed by the MODIS Terra snow product</div>
+      <div class="pub-authors">Henebry, G. M., & <strong>Tomaszewska, M. A.</strong> <a href="https://doi.org/10.1088/1748-9326/ad9c98" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Int. J. Applied Earth Observation and Geoinformation · 2025</div>
+      <div class="pub-title">Characterizing phenological differences of invasive shrubs in a forest matrix using high resolution VENµS time series</div>
+      <div class="pub-authors">Liang, L., Yang, J., Wittenbraker, W. C., Crocker, E. V., <strong>Tomaszewska, M. A.</strong>, & Henebry, G. M. <a href="https://doi.org/10.1016/j.jag.2024.104333" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Journal of Animal Ecology · 2024</div>
+      <div class="pub-title">Chasing and surfing seasonal waves: Avian migration through the US tracks land surface phenology in fall, but not spring</div>
+      <div class="pub-authors">Adams, C. A., <strong>Tomaszewska, M. A.</strong>, Henebry, G. M., & Horton, K. G. <a href="https://doi.org/10.1111/1365-2656.14088" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Nature Communications · 2023 <span class="pub-badge">High Impact</span></div>
+      <div class="pub-title">Artificial light at night is a top predictor of bird migration stopover density</div>
+      <div class="pub-authors">Horton, K. G., Buler, J. J., Anderson, S. J., Burt, C. S., Collins, A. C., Dokter, A. M., Guo, F., Sheldon, D., <strong>Tomaszewska, M. A.</strong>, & Henebry, G. M. <a href="https://doi.org/10.1038/s41467-023-43046-z" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Remote Sensing · 2021</div>
+      <div class="pub-title">Remote sensing of pasture degradation in the highlands of the Kyrgyz Republic: Finer-scale analysis reveals complicating factors</div>
+      <div class="pub-authors"><strong>Tomaszewska, M. A.</strong>, & Henebry, G. M. <a href="https://doi.org/10.3390/rs13173449" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+        <div class="pub-item">
+      <div class="pub-journal">Int. Arch. Photogramm. Remote Sens. Spatial Inf. Sci. · 2021</div>
+      <div class="pub-title">Exploring how DESIS imagery can enhance the characterization of land surface phenologies in montane pastures</div>
+      <div class="pub-authors">Henebry G., <strong>Tomaszewska M.</strong>, Zhumanova M., Mambetov A., Orunbaev S., Kulenbekov Z. <a href="https://doi.org/10.5194/isprs-archives-XLVI-1-W1-2021-23-2022" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Remote Sensing of Environment · 2020</div>
+      <div class="pub-title">Land surface phenology in the highland pastures of montane Central Asia: Interactions with snow cover seasonality and terrain characteristics</div>
+      <div class="pub-authors"><strong>Tomaszewska, M. A.</strong>, Nguyen, L. H., & Henebry, G. M. <a href="https://doi.org/10.1016/j.rse.2020.111675" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Int. J. Applied Earth Observation and Geoinformation · 2020</div>
+      <div class="pub-title">How much variation in land surface phenology can climate oscillation modes explain at the scale of mountain pastures in Kyrgyzstan?</div>
+      <div class="pub-authors"><strong>Tomaszewska, M. A.</strong>, & Henebry, G. M. <a href="https://doi.org/10.1016/j.jag.2020.102053" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Environmental Research Letters · 2018</div>
+      <div class="pub-title">Changing snow seasonality in the highlands of Kyrgyzstan</div>
+      <div class="pub-authors"><strong>Tomaszewska M.</strong>, Henebry G.M. <a href="https://doi.org/10.1088/1748-9326/aabd6f" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Remote Sensing · 2018</div>
+      <div class="pub-title">Comparison of Global and Continental Land Cover Products for Selected Study Areas in South Central and Eastern European Region</div>
+      <div class="pub-authors">Manakos, I., <strong>Tomaszewska, M.</strong>, Gkinis, I., et al. <a href="https://doi.org/10.3390/rs10121967" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Remote Sensing · 2016</div>
+      <div class="pub-title">Urban-rural contrasts in Central-Eastern European cities using a MODIS 4 micron time series</div>
+      <div class="pub-authors"><strong>Tomaszewska, M.</strong>, & Henebry, G. M. <a href="https://doi.org/10.3390/rs8110924" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">IEEE J. Selected Topics in Applied Earth Observations and Remote Sensing · 2016</div>
+      <div class="pub-title">Viewing global megacities through MODIS 4 µm radiance: Effects of time of year, latitude, land cover, and view zenith angle</div>
+      <div class="pub-authors"><strong>Tomaszewska M.</strong>, Kovalskyy V., Small C., Henebry G. M. <a href="https://doi.org/10.1109/JSTARS.2016.2532740" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Remote Sensing · 2016</div>
+      <div class="pub-title">Assessment of Carbon Flux and Soil Moisture in Wetlands Applying Sentinel-1 Data</div>
+      <div class="pub-authors">Dabrowska-Zielinska K., Budzynska M., <strong>Tomaszewska M.</strong>, Malinska A., Gatkowska M., Bartold M., Malek I. <a href="https://doi.org/10.3390/rs8090756" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Geoinformation Issues · 2016</div>
+      <div class="pub-title">Importance of grassland monitoring in European perspective of climate change – FINEGRASS project</div>
+      <div class="pub-authors">Jollmann J., Taff G., Twardy S., Budzynska M., Czerwinski M., Kopacz M., Kurnicki R., Kowalik W., <strong>Tomaszewska M.</strong>, et al. <a href="http://bc.igik.edu.pl/dlibra/publication/754/edition/610?language=en" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Geoinformation Issues · 2014</div>
+      <div class="pub-title">CORINE Land Cover 2012 – 4th CLC inventory completed in Poland</div>
+      <div class="pub-authors">Hoscilo A., <strong>Tomaszewska M.</strong>  <a href="http://bc.igik.edu.pl/dlibra/publication/617/edition/499?language=en" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-journal">Remote Sensing · 2014</div>
+      <div class="pub-title">Monitoring Wetlands Ecosystems Using ALOS PALSAR (L-Band, HV) Supplemented by Optical Data: A Case Study of Biebrza Wetlands in Northeast Poland</div>
+      <div class="pub-authors">Dabrowska-Zielinska K., Budzynska M., <strong>Tomaszewska M.</strong>, Bartold M., Gatkowska M., Malek I., Turlej K., Napiorkowska M. <a href="https://doi.org/10.3390/rs6021605" target="_blank" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--pulse);text-decoration:none;border-bottom:1px solid rgba(0,255,157,0.3);margin-left:0.5rem;">DOI →</a></div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<section id="service">
+  <div class="container">
+    <div class="section-label">Community</div>
+    <h2 class="section-title">Professional Service & Honors</h2>
+    <div class="service-grid">
+      <div class="service-block">
+        <h3>Memberships & Roles</h3>
+        <div class="service-item">Member – NASA LP DAAC User Working Group (UWG)</div>
+        <div class="service-item">Member – NASA Surface Biology and Geology (SBG) Algorithms & Applications Working Group</div>
+        <div class="service-item">Member – MSU Institute for Cyber-Enabled Research (ICER) User Advisory Board</div>
+        <div class="service-item">Member – American Geophysical Union (AGU)</div>
+        <div class="service-item">Member – Global Land Programme</div>
+        <div class="service-item">Trainer – CARIN & SCERIN international capacity-building workshops on EO data processing and analytics</div>
+      </div>
+      <div class="service-block">
+        <h3>Awards & Honors</h3>
+        <div class="service-item">SPIE Optics and Photonics Education Scholarship (2015)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="section-label">Signal</div>
+    <h2 class="section-title">Contact</h2>
+    <div class="contact-grid">
+      <div>
+        <p class="contact-intro">Open to collaborations, research partnerships, and scientific discussions in Earth observation, remote sensing, and geospatial science.</p>
+        <div class="contact-detail">
+          <div class="contact-icon">Email</div>
+          <div class="contact-val">
+            <div class="service-item"><a href="mailto:monika.anna.tomaszewska@gmail.com">monika.anna.tomaszewska@gmail.com</a></div>
+            <div class="service-item"><a href="mailto:mt.matsat@gmail.com">mt.matsat@gmail.com</a></div>
+         </div>
+        <div class="contact-detail">
+          <div class="contact-icon">Phone</div>
+          <div class="contact-val">+48-606-996-992</div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">Location</div>
+          <div class="contact-val">Warsaw, Poland</div>
+        </div>
+      </div>
+</section>
+
+<section id="cv">
+  <div class="container">
+    <div class="section-label">Download</div>
+    <h2 class="section-title">Curriculum Vitae</h2>
+    <p style="color:var(--dim);font-size:1rem;margin-bottom:2rem;">Full academic CV including complete publication list, projects, and professional experience.</p>
+    <a href="CV_Tomaszewska.pdf" download class="btn btn-primary">Download CV (PDF)</a>
+  </div>
+</section>
+
+<footer>
+  © 2026 · MONIKA ANNA TOMASZEWSKA, PH.D. · WARSAW, POLAND
+</footer>
+
+<script>
+(function() {
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobile-menu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {
+    btn.classList.toggle('is-open');
+    menu.classList.toggle('is-open');
+  });
+  var links = menu.querySelectorAll('a');
+  for (var i = 0; i < links.length; i++) {
+    links[i].addEventListener('click', function() {
+      btn.classList.remove('is-open');
+      menu.classList.remove('is-open');
+    });
+  }
+})();
+
+// Starfield
+var canvas = document.getElementById('starfield');
+var ctx = canvas.getContext('2d');
+let stars = [];
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 300; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.3,
+      alpha: Math.random() * 0.7 + 0.1,
+      speed: Math.random() * 0.015 + 0.004,
+      twinkle: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(function(s) {
+    s.twinkle += s.speed;
+    var a = s.alpha * (0.55 + 0.45 * Math.sin(s.twinkle));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(200,230,255,' + a + ')';
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', function() { resize(); initStars(); });
+resize(); initStars(); draw();
+</script>
+</body>
+</html>
